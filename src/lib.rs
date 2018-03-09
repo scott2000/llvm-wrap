@@ -147,7 +147,17 @@ pub mod c_api {
     }
 
     #[doc(inline)]
-    pub use llvm_sys::prelude::{LLVMValueRef, LLVMTypeRef, LLVMContextRef, LLVMBuilderRef, LLVMModuleRef, LLVMBasicBlockRef};
+    pub use llvm_sys::prelude::{
+        LLVMValueRef,
+        LLVMTypeRef,
+        LLVMContextRef,
+        LLVMBuilderRef,
+        LLVMModuleRef,
+        LLVMBasicBlockRef
+    };
+
+    #[doc(inline)]
+    pub use llvm_sys::core as llvm_core;
 }
 
 #[doc(inline)]
