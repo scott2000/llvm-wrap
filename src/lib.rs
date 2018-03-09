@@ -30,15 +30,13 @@
 //! # extern crate llvm_wrap;
 //! # use llvm_wrap::*;
 //! # fn main() {
-//! // Create a new context
-//! let context = Context::new();
-//! // Create a module in the context
-//! let module = context.create_module("add");
-//! // Create a builder in the context
-//! let builder = context.create_builder();
+//! // Create a module
+//! let module = create_module("add");
+//! // Create a builder
+//! let builder = create_builder();
 //!
 //! // Get an `i32 (i32, i32)` type
-//! let ty = context.ty_i32().function(vec![context.ty_i32(); 2], false);
+//! let ty = ty_i32().function(vec![ty_i32(); 2], false);
 //! // Create the add function
 //! let def = module.add_function("add", ty);
 //! // Add an entry block
@@ -99,8 +97,60 @@ mod link;
 pub mod iter;
 pub mod target;
 
+/// Provides functions for using the C API
+pub mod c_api {
+    use super::*;
+
+    /// Returns the global `LLVMContextRef`
+    pub unsafe fn context() -> LLVMContextRef {
+        LLVMGetGlobalContext()
+    }
+
+    /// Create a wrapper for a type
+    pub unsafe fn ty(ty: LLVMTypeRef) -> Type {
+        Type {
+            ty,
+        }
+    }
+
+    /// Create a wrapper for a value
+    pub unsafe fn value(value: LLVMValueRef) -> Value {
+        Value {
+            value,
+        }
+    }
+
+    /// Converts a `String` into a `CString`
+    ///
+    /// This function will also work with other, similar inputs like `&str` literals or
+    /// `String` references. Use the `as_ptr` method to pass a pointer to a C function.
+    pub fn into_c<S: AsRef<str>>(string: S) -> CString {
+        CString::new(string.as_ref()).expect("invalid name")
+    }
+
+    /// Converts a `*const i8` into a `String`, if possible
+    ///
+    /// Returns `Some` if the pointer isn't null and points to a valid, non-empty string and
+    /// returns `None` otherwise.
+    pub fn from_c(string: *const i8) -> Option<String> {
+        if !string.is_null() {
+            unsafe {
+                if let Ok(string) = CStr::from_ptr(string).to_str() {
+                    if !string.is_empty() {
+                        return Some(string.to_string());
+                    }
+                }
+            }
+        }
+        None
+    }
+
+    #[doc(inline)]
+    pub use llvm_sys::prelude::{LLVMValueRef, LLVMTypeRef, LLVMContextRef, LLVMBuilderRef, LLVMModuleRef, LLVMBasicBlockRef};
+}
+
 #[doc(inline)]
-pub use context::Context;
+pub use context::*;
 #[doc(inline)]
 pub use module::Module;
 #[doc(inline)]
@@ -117,36 +167,11 @@ pub use cc::CallConv;
 pub use link::Linkage;
 
 /// Converts a `Vec<Value>` into a `Vec<LLVMValueRef>`
-fn val_vec<'c>(vals: &Vec<Value<'c>>) -> Vec<LLVMValueRef> {
+fn val_vec(vals: &Vec<Value>) -> Vec<LLVMValueRef> {
     vals.iter().map(|i| i.value).collect()
 }
 
 /// Converts a `Vec<Type>` into a `Vec<LLVMTypeRef>`
-fn ty_vec<'c>(types: &Vec<Type<'c>>) -> Vec<LLVMTypeRef> {
+fn ty_vec(types: &Vec<Type>) -> Vec<LLVMTypeRef> {
     types.iter().map(|i| i.ty).collect()
-}
-
-/// Converts a `String` into a `CString`
-///
-/// This function will also work with other, similar inputs like `&str` literals or
-/// `String` references. Use the `as_ptr` method to pass a pointer to a C function.
-pub fn into_c<S: AsRef<str>>(string: S) -> CString {
-    CString::new(string.as_ref()).expect("invalid name")
-}
-
-/// Converts a `*const i8` into a `String`, if possible
-///
-/// Returns `Some` if the pointer isn't null and points to a valid, non-empty string and
-/// returns `None` otherwise.
-pub fn from_c(string: *const i8) -> Option<String> {
-    if !string.is_null() {
-        unsafe {
-            if let Ok(string) = CStr::from_ptr(string).to_str() {
-                if !string.is_empty() {
-                    return Some(string.to_string());
-                }
-            }
-        }
-    }
-    None
 }

@@ -1,26 +1,20 @@
 //! A wrapper around a `LLVMModuleRef` for a specific context
 
 use super::*;
+use super::c_api::*;
 
 use llvm_sys::bit_writer::LLVMWriteBitcodeToFile;
 use std::path::Path;
 
 /// A wrapper around a `LLVMModuleRef` for a specific context
-pub struct Module<'c> {
-    pub(crate) context: &'c Context,
+pub struct Module {
     pub(crate) module: Option<LLVMModuleRef>,
 }
 
-impl<'c> Module<'c> {
-    /// Returns the parent context of the module
-    pub fn context(&self) -> &'c Context {
-        self.context
-    }
-
+impl Module {
     /// Add a function to the module
-    pub fn add_function<S>(&self, name: S, ty: Type<'c>) -> Value<'c> where S: AsRef<str> {
+    pub fn add_function<S>(&self, name: S, ty: Type) -> Value where S: AsRef<str> {
         Value {
-            context: self.context,
             value: unsafe {
                 LLVMAddFunction(self.module.unwrap(), into_c(name).as_ptr(), ty.ty)
             }
@@ -28,9 +22,8 @@ impl<'c> Module<'c> {
     }
 
     /// Add a global to the module
-    pub fn add_global<S>(&self, name: S, ty: Type<'c>) -> Value<'c> where S: AsRef<str> {
+    pub fn add_global<S>(&self, name: S, ty: Type) -> Value where S: AsRef<str> {
         Value {
-            context: self.context,
             value: unsafe {
                 LLVMAddGlobal(self.module.unwrap(), ty.ty, into_c(name).as_ptr())
             }
@@ -38,9 +31,8 @@ impl<'c> Module<'c> {
     }
 
     /// Get the function with the given name
-    pub fn get_function<S>(&self, name: S) -> Value<'c> where S: AsRef<str> {
+    pub fn get_function<S>(&self, name: S) -> Value where S: AsRef<str> {
         Value {
-            context: self.context,
             value: unsafe {
                 LLVMGetNamedFunction(self.module.unwrap(), into_c(name).as_ptr())
             }
@@ -48,9 +40,8 @@ impl<'c> Module<'c> {
     }
 
     /// Get the global with the given name
-    pub fn get_global<S>(&self, name: S) -> Value<'c> where S: AsRef<str> {
+    pub fn get_global<S>(&self, name: S) -> Value where S: AsRef<str> {
         Value {
-            context: self.context,
             value: unsafe {
                 LLVMGetNamedGlobal(self.module.unwrap(), into_c(name).as_ptr())
             }
@@ -75,7 +66,6 @@ impl<'c> Module<'c> {
     pub fn functions(&self) -> iter::Functions {
         iter::Functions {
             pointer: Value {
-                context: self.context,
                 value: unsafe {
                     LLVMGetFirstFunction(self.module.unwrap())
                 }
@@ -87,7 +77,6 @@ impl<'c> Module<'c> {
     pub fn globals(&self) -> iter::Globals {
         iter::Globals {
             pointer: Value {
-                context: self.context,
                 value: unsafe {
                     LLVMGetFirstGlobal(self.module.unwrap())
                 }
@@ -144,7 +133,7 @@ impl<'c> Module<'c> {
     }
 }
 
-impl<'c> Deref for Module<'c> {
+impl Deref for Module {
     type Target = LLVMModuleRef;
 
     fn deref(&self) -> &LLVMModuleRef {
@@ -152,7 +141,7 @@ impl<'c> Deref for Module<'c> {
     }
 }
 
-impl<'c> Drop for Module<'c> {
+impl Drop for Module {
     fn drop(&mut self) {
         if let Some(module) = self.module {
             unsafe {
@@ -162,7 +151,7 @@ impl<'c> Drop for Module<'c> {
     }
 }
 
-impl<'c> Debug for Module<'c> {
+impl Debug for Module {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(f, "Module")
     }

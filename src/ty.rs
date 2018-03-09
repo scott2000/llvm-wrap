@@ -1,20 +1,20 @@
 //! A wrapper around a `LLVMTypeRef`
 
 use super::*;
+use super::context::*;
+
 use std::mem;
 
 /// A wrapper around a `LLVMTypeRef` for a specific context
 #[derive(Copy, Clone)]
-pub struct Type<'c> {
-    pub(crate) context: &'c Context,
+pub struct Type {
     pub(crate) ty: LLVMTypeRef
 }
 
-impl<'c> Type<'c> {
+impl Type {
     /// Creates a function that returns this type
-    pub fn function(&self, params: Vec<Type>, va_args: bool) -> Type<'c> {
+    pub fn function(&self, params: Vec<Type>, va_args: bool) -> Type {
         Type {
-            context: self.context,
             ty: unsafe {
                 LLVMFunctionType(self.ty, ty_vec(&params).as_mut_ptr(), params.len() as u32, va_args as i32)
             }
@@ -22,9 +22,8 @@ impl<'c> Type<'c> {
     }
 
     /// Creates a pointer to this type
-    pub fn pointer(&self) -> Type<'c> {
+    pub fn pointer(&self) -> Type {
         Type {
-            context: self.context,
             ty: unsafe {
                 LLVMPointerType(self.ty, 0)
             }
@@ -32,21 +31,20 @@ impl<'c> Type<'c> {
     }
 
     /// The internal reference counter
-    pub fn rc(&self) -> Type<'c> {
-        self.context.ty_struct(vec![*self, self.context.ty_i32()], false)
+    pub fn rc(&self) -> Type {
+        ty_struct(vec![*self, ty_i32()], false)
     }
 
     /// Set the body of a struct
-    pub fn struct_set_body(&self, elements: Vec<Type<'c>>, packed: bool) {
+    pub fn struct_set_body(&self, elements: Vec<Type>, packed: bool) {
         unsafe {
             LLVMStructSetBody(self.ty, ty_vec(&elements).as_mut_ptr(), elements.len() as u32, packed as i32)
         }
     }
 
     /// An integer constant of this type
-    pub fn const_int(&self, val: u64) -> Value<'c> {
+    pub fn const_int(&self, val: u64) -> Value {
         Value {
-            context: self.context,
             value: unsafe {
                 LLVMConstInt(self.ty, val, 0)
             }
@@ -54,9 +52,8 @@ impl<'c> Type<'c> {
     }
 
     /// An integer constant of this type
-    pub fn const_signed_int(&self, val: i64) -> Value<'c> {
+    pub fn const_signed_int(&self, val: i64) -> Value {
         Value {
-            context: self.context,
             value: unsafe {
                 LLVMConstInt(self.ty, mem::transmute(val), 0)
             }
@@ -64,9 +61,8 @@ impl<'c> Type<'c> {
     }
 
     /// A real constant of this type
-    pub fn const_real(&self, val: f64) -> Value<'c> {
+    pub fn const_real(&self, val: f64) -> Value {
         Value {
-            context: self.context,
             value: unsafe {
                 LLVMConstReal(self.ty, val)
             }
@@ -74,9 +70,8 @@ impl<'c> Type<'c> {
     }
 
     /// A constant named struct with the given elements
-    pub fn const_struct(&self, elements: Vec<Value<'c>>) -> Value<'c> {
+    pub fn const_struct(&self, elements: Vec<Value>) -> Value {
         Value {
-            context: self.context,
             value: unsafe {
                 LLVMConstNamedStruct(self.ty, val_vec(&elements).as_mut_ptr(), elements.len() as u32)
             }
@@ -84,9 +79,8 @@ impl<'c> Type<'c> {
     }
 
     /// A constant array with the given elements
-    pub fn const_array(&self, elements: Vec<Value<'c>>) -> Value<'c> {
+    pub fn const_array(&self, elements: Vec<Value>) -> Value {
         Value {
-            context: self.context,
             value: unsafe {
                 LLVMConstArray(self.ty, val_vec(&elements).as_mut_ptr(), elements.len() as u32)
             }
@@ -94,9 +88,8 @@ impl<'c> Type<'c> {
     } //TODO add Functions, Globals, and Params in public module `iter`
 
     /// The `undef` value for this type
-    pub fn undef(&self) -> Value<'c> {
+    pub fn undef(&self) -> Value {
         Value {
-            context: self.context,
             value: unsafe {
                 LLVMGetUndef(self.ty)
             }
@@ -104,9 +97,8 @@ impl<'c> Type<'c> {
     }
 
     /// The `null` value for this type
-    pub fn null(&self) -> Value<'c> {
+    pub fn null(&self) -> Value {
         Value {
-            context: self.context,
             value: unsafe {
                 LLVMConstNull(self.ty)
             }
@@ -114,9 +106,8 @@ impl<'c> Type<'c> {
     }
 
     /// The `null` value for this pointer type
-    pub fn null_ptr(&self) -> Value<'c> {
+    pub fn null_ptr(&self) -> Value {
         Value {
-            context: self.context,
             value: unsafe {
                 LLVMConstPointerNull(self.ty)
             }
@@ -136,7 +127,7 @@ impl<'c> Type<'c> {
     }
 }
 
-impl<'c> Deref for Type<'c> {
+impl Deref for Type {
     type Target = LLVMTypeRef;
 
     fn deref(&self) -> &LLVMTypeRef {
@@ -144,7 +135,7 @@ impl<'c> Deref for Type<'c> {
     }
 }
 
-impl<'c> Debug for Type<'c> {
+impl Debug for Type {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(f, "Type")
     }

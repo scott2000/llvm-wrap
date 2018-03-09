@@ -1,6 +1,7 @@
 //! A wrapper around a `LLVMBasicBlockRef`
 
 use super::*;
+use super::c_api::*;
 
 /// A wrapper around a `LLVMBasicBlockRef`
 #[derive(Copy, Clone)]

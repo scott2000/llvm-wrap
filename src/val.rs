@@ -1,20 +1,20 @@
 //! A wrapper around a `LLVMValueRef`
 
 use super::*;
+use super::c_api::*;
 
 /// A wrapper around a `LLVMValueRef` for a specific context
 #[derive(Copy, Clone)]
-pub struct Value<'c> {
-    pub(crate) context: &'c Context,
+pub struct Value {
     pub(crate) value: LLVMValueRef
 }
 
-impl<'c> Value<'c> {
+impl Value {
     /// Adds a block to this function
     pub fn append_basic_block<S>(&self, name: S) -> BasicBlock where S: AsRef<str> {
         BasicBlock {
             basic_block: unsafe {
-                LLVMAppendBasicBlockInContext(self.context.context.unwrap(), self.value, CString::new(name.as_ref()).expect("invalid module name").as_ptr() as *const i8)
+                LLVMAppendBasicBlockInContext(context(), self.value, CString::new(name.as_ref()).expect("invalid module name").as_ptr() as *const i8)
             }
         }
     }
@@ -34,7 +34,7 @@ impl<'c> Value<'c> {
     }
 
     /// Set the calling convention of this function
-    pub fn set_call_conv(&self, cc: CallConv) -> Value<'c> {
+    pub fn set_call_conv(&self, cc: CallConv) -> Value {
         unsafe {
             LLVMSetFunctionCallConv(self.value, cc as u32);
         }
@@ -42,7 +42,7 @@ impl<'c> Value<'c> {
     }
 
     /// Set the linkage of this global
-    pub fn set_linkage(&self, link: Linkage) -> Value<'c> {
+    pub fn set_linkage(&self, link: Linkage) -> Value {
         unsafe {
             LLVMSetLinkage(self.value, link.inner());
         }
@@ -50,7 +50,7 @@ impl<'c> Value<'c> {
     }
 
     /// Set whether this is a tail call
-    pub fn set_tail_call(&self, tail: bool) -> Value<'c> {
+    pub fn set_tail_call(&self, tail: bool) -> Value {
         unsafe {
             LLVMSetTailCall(self.value, tail as i32);
         }
@@ -58,7 +58,7 @@ impl<'c> Value<'c> {
     }
 
     /// Set whether this global is a constant
-    pub fn set_global_const(&self, constant: bool) -> Value<'c> {
+    pub fn set_global_const(&self, constant: bool) -> Value {
         unsafe {
             LLVMSetGlobalConstant(self.value, constant as i32);
         }
@@ -66,7 +66,7 @@ impl<'c> Value<'c> {
     }
 
     /// Set whether the address of this global is significant
-    pub fn set_unnamed_addr(&self, unnamed_addr: bool) -> Value<'c> {
+    pub fn set_unnamed_addr(&self, unnamed_addr: bool) -> Value {
         unsafe {
             LLVMSetUnnamedAddr(self.value, unnamed_addr as i32);
         }
@@ -74,7 +74,7 @@ impl<'c> Value<'c> {
     }
 
     /// Set the initializer of this global
-    pub fn set_global_initializer(&self, init: Value<'c>) -> Value<'c> {
+    pub fn set_global_initializer(&self, init: Value) -> Value {
         unsafe {
             LLVMSetInitializer(self.value, init.value);
         }
@@ -82,7 +82,7 @@ impl<'c> Value<'c> {
     }
 
     /// Set the alignment of this value
-    pub fn set_alignment(&self, bytes: u32) -> Value<'c> {
+    pub fn set_alignment(&self, bytes: u32) -> Value {
         unsafe {
             LLVMSetAlignment(self.value, bytes);
         }
@@ -90,9 +90,8 @@ impl<'c> Value<'c> {
     }
 
     /// Get a parameter for this function
-    pub fn param(&self, param: u32) -> Value<'c> {
+    pub fn param(&self, param: u32) -> Value {
         Value {
-            context: self.context,
             value: unsafe {
                 LLVMGetParam(self.value, param as u32)
             }
@@ -103,7 +102,6 @@ impl<'c> Value<'c> {
     pub fn params(&self) -> iter::Params {
         iter::Params {
             pointer: Value {
-                context: self.context,
                 value: unsafe {
                     LLVMGetFirstParam(self.value)
                 }
@@ -112,7 +110,7 @@ impl<'c> Value<'c> {
     }
 
     /// Set the alignment of this parameter
-    pub fn set_param_alignment(&self, bytes: u32) -> Value<'c> {
+    pub fn set_param_alignment(&self, bytes: u32) -> Value {
         unsafe {
             LLVMSetParamAlignment(self.value, bytes);
         }
@@ -131,7 +129,7 @@ impl<'c> Value<'c> {
     }
 
     /// Set the name of a value
-    pub fn name<S>(&self, name: S) -> Value<'c> where S: AsRef<str> {
+    pub fn name<S>(&self, name: S) -> Value where S: AsRef<str> {
         unsafe {
             LLVMSetValueName(self.value, into_c(name).as_ptr());
         }
@@ -146,9 +144,8 @@ impl<'c> Value<'c> {
     }
 
     /// Get the type of this value
-    pub fn ty(&self) -> Type<'c> {
+    pub fn ty(&self) -> Type {
         Type {
-            context: self.context,
             ty: unsafe {
                 LLVMTypeOf(self.value)
             }
@@ -168,7 +165,7 @@ impl<'c> Value<'c> {
     }
 }
 
-impl<'c> Deref for Value<'c> {
+impl Deref for Value {
     type Target = LLVMValueRef;
 
     fn deref(&self) -> &LLVMValueRef {
@@ -176,7 +173,7 @@ impl<'c> Deref for Value<'c> {
     }
 }
 
-impl<'c> Debug for Value<'c> {
+impl Debug for Value {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         if let Some(name) = self.get_name() {
             write!(f, "Value({})", name)

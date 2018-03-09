@@ -3,20 +3,19 @@ use super::*;
 
 /// An iterator over functions in a module
 #[derive(Clone, Debug)]
-pub struct Functions<'c> {
-    pub(crate) pointer: Value<'c>,
+pub struct Functions {
+    pub(crate) pointer: Value,
 }
 
-impl<'c> Iterator for Functions<'c> {
-    type Item = Value<'c>;
+impl Iterator for Functions {
+    type Item = Value;
 
-    fn next(&mut self) -> Option<Value<'c>> {
+    fn next(&mut self) -> Option<Value> {
         if self.pointer.value.is_null() {
             None
         } else {
             let next = self.pointer;
             self.pointer = Value {
-                context: self.pointer.context,
                 value: unsafe {
                     LLVMGetNextFunction(self.pointer.value)
                 }
@@ -28,20 +27,19 @@ impl<'c> Iterator for Functions<'c> {
 
 /// An iterator over global variables in a module
 #[derive(Clone, Debug)]
-pub struct Globals<'c> {
-    pub(crate) pointer: Value<'c>,
+pub struct Globals {
+    pub(crate) pointer: Value,
 }
 
-impl<'c> Iterator for Globals<'c> {
-    type Item = Value<'c>;
+impl Iterator for Globals {
+    type Item = Value;
 
-    fn next(&mut self) -> Option<Value<'c>> {
+    fn next(&mut self) -> Option<Value> {
         if self.pointer.value.is_null() {
             None
         } else {
             let next = self.pointer;
             self.pointer = Value {
-                context: self.pointer.context,
                 value: unsafe {
                     LLVMGetNextGlobal(self.pointer.value)
                 }
@@ -53,20 +51,19 @@ impl<'c> Iterator for Globals<'c> {
 
 /// An iterator over parameters in a function
 #[derive(Clone, Debug)]
-pub struct Params<'c> {
-    pub(crate) pointer: Value<'c>,
+pub struct Params {
+    pub(crate) pointer: Value,
 }
 
-impl<'c> Iterator for Params<'c> {
-    type Item = Value<'c>;
+impl Iterator for Params {
+    type Item = Value;
 
-    fn next(&mut self) -> Option<Value<'c>> {
+    fn next(&mut self) -> Option<Value> {
         if self.pointer.value.is_null() {
             None
         } else {
             let next = self.pointer;
             self.pointer = Value {
-                context: self.pointer.context,
                 value: unsafe {
                     LLVMGetNextParam(self.pointer.value)
                 }
