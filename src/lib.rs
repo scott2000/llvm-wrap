@@ -6,9 +6,8 @@
 //! constraints on memory management. Mainly, immutable references can still be modified in order
 //! to make certain programs more simple.
 //!
-//! To make things simple, `LLVMContext`, `LLVMBuilder`, and `LLVMModule` are disposed
-//! automatically when they leave scope. Additionally, values and types cannot outlive the context
-//! in which they were created.
+//! To make things simple, `LLVMBuilder` and `LLVMModule` are disposed automatically when they leave
+//! scope. Values and types are always created in the default global context provided by LLVM.
 //!
 //! If necessary, it is possible to use the `inner` function to access the wrapped value, or
 //! `into_inner` to destroy the wrapper without disposing the contained value. Most types can also
