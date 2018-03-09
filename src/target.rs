@@ -1,5 +1,6 @@
 //! Provides wrappers for target-related operations
 use super::*;
+use super::c_api::*;
 
 use std::path::Path;
 use std::ptr::null_mut;
