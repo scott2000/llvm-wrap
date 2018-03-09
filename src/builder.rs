@@ -1,6 +1,7 @@
 //! A wrapper around a `LLVMBuilderRef` for a specific context
 
 use super::*;
+use super::types::*;
 use super::c_api::*;
 
 /// A wrapper around a `LLVMBuilderRef` for a specific context

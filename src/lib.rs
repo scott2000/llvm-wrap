@@ -27,8 +27,9 @@
 //! ## Example
 //!
 //! ```
-//! # extern crate llvm_wrap;
-//! # use llvm_wrap::*;
+//! # extern crate llvm_wrap as llvm;
+//! # use llvm::*;
+//! # use llvm::types::*;
 //! # fn main() {
 //! // Create a module
 //! let module = create_module("add");
@@ -96,6 +97,7 @@ mod link;
 
 pub mod iter;
 pub mod target;
+pub mod types;
 
 /// Provides functions for using the C API
 pub mod c_api {

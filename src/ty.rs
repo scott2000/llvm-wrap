@@ -1,7 +1,7 @@
 //! A wrapper around a `LLVMTypeRef`
 
 use super::*;
-use super::context::*;
+use super::types::*;
 
 use std::mem;
 
@@ -85,7 +85,7 @@ impl Type {
                 LLVMConstArray(self.ty, val_vec(&elements).as_mut_ptr(), elements.len() as u32)
             }
         }
-    } //TODO add Functions, Globals, and Params in public module `iter`
+    }
 
     /// The `undef` value for this type
     pub fn undef(&self) -> Value {
