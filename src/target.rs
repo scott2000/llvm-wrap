@@ -195,13 +195,10 @@ impl TargetMachine {
     }
 
     /// Emits code for a module to a given file with the given file type
-    ///
-    /// *This may be broken right now*
-    // FIXME - throws an error whenever it is called
-    #[doc(hidden)]
     pub fn emit_module_to_file<P>(&self, module: &Module, file: P, file_type: FileType) -> Result<(), String>
         where P: AsRef<Path> {
         unsafe {
+            LLVM_InitializeAllAsmPrinters();
             let file_str = into_c(file.as_ref().to_str().expect("invalid path")).into_raw();
             let mut error = null_mut();
             let flag = LLVMTargetMachineEmitToFile(

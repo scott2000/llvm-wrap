@@ -1,6 +1,6 @@
 [package]
 name = "llvm-wrap"
-version = "0.2.1"
+version = "0.2.2"
 authors = ["Scott Taylor <scott11x8@gmail.com>"]
 
 description = "A safer wrapper for the LLVM C API bindings in Rust, based on llvm-sys"
