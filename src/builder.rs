@@ -434,6 +434,60 @@ impl Builder {
         }
     }
 
+    /// Builds a `shl` instruction
+    pub fn build_shl(&self, a: Value, b: Value) -> Value {
+        Value {
+            value: unsafe {
+                LLVMBuildShl(self.builder.unwrap(), a.value, b.value, into_c("").as_ptr())
+            }
+        }
+    }
+
+    /// Builds a `lshr` instruction
+    pub fn build_lshr(&self, a: Value, b: Value) -> Value {
+        Value {
+            value: unsafe {
+                LLVMBuildLShr(self.builder.unwrap(), a.value, b.value, into_c("").as_ptr())
+            }
+        }
+    }
+
+    /// Builds an `ashr` instruction
+    pub fn build_ashr(&self, a: Value, b: Value) -> Value {
+        Value {
+            value: unsafe {
+                LLVMBuildAShr(self.builder.unwrap(), a.value, b.value, into_c("").as_ptr())
+            }
+        }
+    }
+
+    /// Builds an `and` instruction
+    pub fn build_and(&self, a: Value, b: Value) -> Value {
+        Value {
+            value: unsafe {
+                LLVMBuildAnd(self.builder.unwrap(), a.value, b.value, into_c("").as_ptr())
+            }
+        }
+    }
+
+    /// Builds an `or` instruction
+    pub fn build_or(&self, a: Value, b: Value) -> Value {
+        Value {
+            value: unsafe {
+                LLVMBuildOr(self.builder.unwrap(), a.value, b.value, into_c("").as_ptr())
+            }
+        }
+    }
+
+    /// Builds an `xor` instruction
+    pub fn build_xor(&self, a: Value, b: Value) -> Value {
+        Value {
+            value: unsafe {
+                LLVMBuildXor(self.builder.unwrap(), a.value, b.value, into_c("").as_ptr())
+            }
+        }
+    }
+
     /// Builds an integer `eq` check
     pub fn build_int_eq(&self, a: Value, b: Value) -> Value {
         Value {
