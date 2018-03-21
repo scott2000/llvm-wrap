@@ -66,8 +66,18 @@ impl Builder {
 
     /// Build a struct initialization for the given type and elements
     pub fn build_struct_init(&self, ty: Type, elements: Vec<Value>) -> Value {
-        let mut agg: Value = ty.undef();
+        let mut init_elems = Vec::new();
+        let mut append_elems = Vec::new();
         for (index, element) in elements.into_iter().enumerate() {
+            if element.is_constant() {
+                init_elems.push(element);
+            } else {
+                init_elems.push(element.ty().undef());
+                append_elems.push((index, element));
+            }
+        }
+        let mut agg = ty.const_struct(init_elems);
+        for (index, element) in append_elems.into_iter() {
             agg = self.build_insert_value(agg, element, index as u32).name(format!("insert_{}", index));
         }
         agg

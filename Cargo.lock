@@ -40,7 +40,7 @@ dependencies = [
 
 [[package]]
 name = "llvm-wrap"
-version = "0.2.4"
+version = "0.2.5"
 dependencies = [
  "llvm-sys 50.0.2 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
