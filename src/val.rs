@@ -65,6 +65,20 @@ impl Value {
         *self
     }
 
+    /// Returns true if this value is a constant
+    pub fn is_constant(&self) -> bool {
+        unsafe {
+            LLVMIsConstant(self.value) != 0
+        }
+    }
+
+    /// Returns true if this value is `undef`
+    pub fn is_undef(&self) -> bool {
+        unsafe {
+            LLVMIsUndef(self.value) != 0
+        }
+    }
+
     /// Set whether the address of this global is significant
     pub fn set_unnamed_addr(&self, unnamed_addr: bool) -> Value {
         unsafe {

@@ -105,6 +105,15 @@ impl Type {
         }
     }
 
+    /// The all ones value for this type
+    pub fn ones(&self) -> Value {
+        Value {
+            value: unsafe {
+                LLVMConstAllOnes(self.ty)
+            }
+        }
+    }
+
     /// The `null` value for this pointer type
     pub fn null_ptr(&self) -> Value {
         Value {

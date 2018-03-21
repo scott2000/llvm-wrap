@@ -73,6 +73,26 @@ impl Builder {
         agg
     }
 
+    /// Build a struct initialization that stores it into memory with `alloca`
+    pub fn build_struct_alloca_init(&self, ty: Type, elements: Vec<Value>) -> Value {
+        let ptr = self.build_alloca(ty);
+        for (index, element) in elements.into_iter().enumerate() {
+            let elem_ptr = self.build_struct_gep(ptr, index as u32).name(format!("init_{}", index));
+            self.build_store(element, elem_ptr);
+        }
+        ptr
+    }
+
+    /// Build a struct initialization that stores it into memory with `malloc`
+    pub fn build_struct_malloc_init(&self, ty: Type, elements: Vec<Value>) -> Value {
+        let ptr = self.build_malloc(ty);
+        for (index, element) in elements.into_iter().enumerate() {
+            let elem_ptr = self.build_struct_gep(ptr, index as u32).name(format!("init_{}", index));
+            self.build_store(element, elem_ptr);
+        }
+        ptr
+    }
+
     /// Build an insert value instruction
     pub fn build_insert_value(&self, agg: Value, elt: Value, index: u32) -> Value {
         Value {
